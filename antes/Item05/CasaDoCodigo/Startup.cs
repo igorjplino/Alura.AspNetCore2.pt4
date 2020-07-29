@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using System;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace CasaDoCodigo
 {
@@ -103,6 +104,9 @@ namespace CasaDoCodigo
             //        options.ClientSecret = Configuration["ExternalLogin:Google:ClientSecret"];
             //    });
 
+            // Essa chamada limpa as claims do padrão microsoft e utilizada o padrão OpenIdConnect
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
             services.AddAuthentication(options =>
             {
                 //forma de autenticação local do usuário
@@ -114,7 +118,7 @@ namespace CasaDoCodigo
             .AddOpenIdConnect(options =>
             {
                 options.SignInScheme = "Cookies";
-                options.Authority = "http://localhost:5000";
+                options.Authority = Configuration["CasaDoCodigoIdentityServerUrl"];
                 options.ClientId = "CasaDoCodigo.MVC";
                 options.ClientSecret = "49C1A7E1-0C79-4A89-A3D6-A37998FB86B0";
                 options.SaveTokens = true;
@@ -122,6 +126,8 @@ namespace CasaDoCodigo
                 options.ResponseType = "code id_token";
                 //código de autorização + token de identidade
                 options.RequireHttpsMetadata = false;
+                // obter mais informações do usuário
+                options.GetClaimsFromUserInfoEndpoint = true;
             });
 
             services.AddHttpClient<IRelatorioHelper, RelatorioHelper>();
